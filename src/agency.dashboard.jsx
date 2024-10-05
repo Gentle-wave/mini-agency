@@ -10,6 +10,7 @@ const AgencyDashboard = () => {
     phone: "123-456-7890",
     address: "1234 Business St, City, Country",
     website: "www.awesomeagency.com",
+    type: "event planner",
     projectsManaged: 25,
     projectsCompleted: 20,
   });
@@ -114,6 +115,18 @@ const AgencyDashboard = () => {
                 className={`form-input ${isEditing ? "active" : "inactive"}`}
                 placeholder="Enter address"
                 defaultValue={companyInfo.address}
+                disabled={!isEditing}
+              />
+            </div>
+
+             {/* Type */}
+             <div className="mb-4">
+              <label className="block text-sm font-semibold mb-1">Type</label>
+              <input
+                type="text"
+                className={`form-input ${isEditing ? "active" : "inactive"}`}
+                placeholder="Enter agency type"
+                defaultValue={companyInfo.type}
                 disabled={!isEditing}
               />
             </div>
