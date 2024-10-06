@@ -27,7 +27,7 @@ First, you need to pull the React app project from the GitHub repository.
 3. Run the following command to clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/your-react-repo.git
+   git clone https://github.com/Gentle-wave/mini-agency.git
    ```
 
    Replace `your-username` and `your-react-repo` with the actual repository URL.
