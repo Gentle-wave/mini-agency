@@ -1,12 +1,21 @@
 import React, { useState } from 'react';
+import { createProject } from './helper/user';
 
-const AssignProjectModal = ({ user, onClose }) => {
+const AssignProjectModal = ({ user, onClose, onSave }) => {
   const [projectName, setProjectName] = useState('');
 
-  const handleAssign = () => {
+  const handleAssign = async () => {
     if (projectName) {
-      console.log(`Project "${projectName}" assigned to ${user.name}`);
-      onClose(); // Close modal after assignment
+      const result = await createProject({projectName, agency:user.userId});
+
+      if (result.success) {
+        onSave()
+        onClose(); // Close modal after assignment
+
+      } else {
+        alert('Failed to create project:', result.message);
+      }
+
     } else {
       alert('Please enter a project name');
     }
@@ -16,7 +25,7 @@ const AssignProjectModal = ({ user, onClose }) => {
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-75">
       <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
         <h2 className="text-xl text-white mb-4">Assign a Project</h2>
-        <p className="text-gray-400 mb-4">Assign a project to {user.name}</p>
+        <p className="text-gray-400 mb-4">Assign a project to {user.fullName}</p>
         <input
           type="text"
           value={projectName}

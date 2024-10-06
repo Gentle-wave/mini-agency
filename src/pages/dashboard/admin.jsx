@@ -1,23 +1,94 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FaEdit, FaTasks } from 'react-icons/fa';
-import adminImage from './assets/pexels-hannah-nelson-390257-1065084.jpg';
-import fallbackUserImage from '../src/assets/pexels-stefanstefancik-91227.jpg';
-import AssignProjectModal from './AssignProjectModal'; // Import for project assignment modal
-import EditUserModal from './editmodal';
+import adminImage from '../../assets/pexels-hannah-nelson-390257-1065084.jpg';
+import fallbackUserImage from '../../assets/pexels-stefanstefancik-91227.jpg';
+import AssignProjectModal from '../../AssignProjectModal'; // Import for project assignment modal
+import EditUserModal from '../../editmodal';
+import { getAllAgencies, toggleUserActiveStatus } from '../../helper/user';
 
-const Dashboard = ({ adminName }) => {
-  const [userData, setUserData] = useState(users);
+function countTrueValues(arr, key) {
+  return arr.reduce((count, obj) => {
+      // Check if the key exists in the object and its value is true
+      return count + (obj[key] === true ? 1 : 0);
+  }, 0);
+}
+
+const AdminDashboard = ({ adminName, userInfo }) => {
+  const { active, address, email, fullName, phoneNumber, role, type, userId,
+    totalAgencyUsers, totalProjects, activeAgencyUsers, completedProjects } = userInfo
+  const [userData, setUserData] = useState([]);
+
+  const activeUserCount = countTrueValues(userData, 'active');
+  const [projectCount, setProjectCount]=useState(totalProjects)
+
   const [selectedUser, setSelectedUser] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isProjectModalOpen, setProjectModalOpen] = useState(false);
+  const userLoaded = useRef('false')
 
-  const toggleStatus = (id) => {
-    const updatedUsers = userData.map((user) =>
-      user.id === id
-        ? { ...user, status: user.status === 'active' ? 'inactive' : 'active' }
-        : user
-    );
-    setUserData(updatedUsers);
+  // console.log(activeUserCount)
+
+  useEffect(() => {
+    if (userLoaded.current === 'false') {
+      handleGetAllAgencies()
+    }
+  }, [])
+
+  const handleGetAllAgencies = async () => {
+    userLoaded.current = 'true'
+    const result = await getAllAgencies();
+
+    if (result.success) {
+      setUserData(result.agencies)
+    } else {
+      // Handle error (e.g., show an error message)
+      console.error('Failed to fetch agencies:', result.message);
+    }
+  };
+
+  const stats = [
+    {
+      title: 'Total Agencies',
+      value: totalAgencyUsers,
+      change: '+10% from yesterday',
+      color: 'orange-500',
+    },
+    {
+      title: 'Total Active Agencies',
+      value: activeUserCount,
+      change: '+8% from yesterday',
+      color: 'green-500',
+    },
+    {
+      title: 'Total projects',
+      value: projectCount,
+      change: '+2% from yesterday',
+      color: 'purple-500',
+    },
+    {
+      title: 'Projects Completed',
+      value: completedProjects,
+      change: '+3% from yesterday',
+      color: 'blue-500',
+    },
+  ];
+
+  const toggleStatus = async (userId) => {
+    const result = await toggleUserActiveStatus(userId);
+
+    if (result.success) {
+
+      const updatedUsers = userData.map((user) =>
+        user.userId === userId
+          ? { ...user, active: result.active }
+          : user
+      );
+      setUserData(updatedUsers);
+
+    } else {
+      // Handle error (e.g., show an error message)
+      alert('Failed to update user status:', result.message);
+    }
   };
 
   const handleEdit = (user) => {
@@ -34,7 +105,7 @@ const Dashboard = ({ adminName }) => {
 
   const handleSave = (editedUser) => {
     const updatedUsers = userData.map((user) =>
-      user.id === editedUser.id ? editedUser : user
+      user.userId === editedUser.userId ? editedUser : user
     );
     setUserData(updatedUsers);
   };
@@ -54,7 +125,7 @@ const Dashboard = ({ adminName }) => {
         </div>
       </div>
 
-      {/* Dashboard Stats Summary */}
+      {/* AdminDashboard Stats Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         {stats.map((stat) => (
           <div key={stat.title} className="p-6 bg-gray-800 rounded-lg shadow-md text-center">
@@ -74,13 +145,14 @@ const Dashboard = ({ adminName }) => {
               <th className="px-4 py-2">Email</th>
               <th className="px-4 py-2">Phone</th>
               <th className="px-4 py-2">Billing Address</th>
+              <th className="px-4 py-2">Type</th>
               <th className="px-4 py-2">Status</th>
               <th className="px-4 py-2">Actions</th>
             </tr>
           </thead>
           <tbody>
             {userData.map((user) => (
-              <tr key={user.id} className="border-t border-gray-700">
+              <tr key={user.userId} className="border-t border-gray-700">
                 <td className="px-4 py-2">
                   <div className="flex items-center">
                     <img
@@ -88,21 +160,22 @@ const Dashboard = ({ adminName }) => {
                       alt={user.name}
                       className="h-8 w-8 rounded-full mr-3"
                     />
-                    {user.name}
+                    {user.fullName}
                   </div>
                 </td>
                 <td className="px-4 py-2">{user.email}</td>
-                <td className="px-4 py-2">{user.phone}</td>
+                <td className="px-4 py-2">{user.phoneNumber}</td>
                 <td className="px-4 py-2">{user.address}</td>
+                <td className="px-4 py-2">{user.type}</ td>
                 <td className="px-4 py-2">
                   <button
-                    onClick={() => toggleStatus(user.id)}
-                    className={`px-3 py-1 rounded ${user.status === 'active'
+                    onClick={() => toggleStatus(user.userId)}
+                    className={`px-3 py-1 rounded ${user.active
                       ? 'bg-green-600 hover:bg-green-700'
                       : 'bg-red-600 hover:bg-red-700'
                       } text-white`}
                   >
-                    {user.status === 'active' ? 'Active' : 'Inactive'}
+                    {user.active ? 'Active' : 'Inactive'}
                   </button>
                 </td>
                 <td className="px-4 py-6">
@@ -133,6 +206,7 @@ const Dashboard = ({ adminName }) => {
       {isProjectModalOpen && (
         <AssignProjectModal
           user={selectedUser} // Pass selected user to the project modal
+          onSave={() => setProjectCount(prev => prev + 1)}
           onClose={() => setProjectModalOpen(false)} // Close modal function
         />
       )}
@@ -140,7 +214,7 @@ const Dashboard = ({ adminName }) => {
   );
 };
 
-export default Dashboard;
+export default AdminDashboard;
 
 
 // Dummy Data
@@ -154,6 +228,7 @@ const users = [
     totalSpent: '$981.00',
     status: 'active',
     image: '/src/assets/pexels-creationhill-1681010.jpg',
+    type: "Car rentals"
   },
   {
     id: 2,
@@ -164,6 +239,7 @@ const users = [
     totalSpent: '$199.00',
     status: 'inactive',
     image: './assets/pexels-hannah-nelson-390257-1065084.jpg',
+    type: "Event planners"
   },
   {
     id: 3,
@@ -174,6 +250,7 @@ const users = [
     totalSpent: '$453.50',
     status: 'active',
     image: './assets/pexels-justin-shaifer-501272-1222271.jpg',
+    type: "Customer relation"
   },
   {
     id: 4,
@@ -184,32 +261,8 @@ const users = [
     totalSpent: '$725.00',
     status: 'inactive',
     image: './assets/pexels-stefanstefancik-91227.jpg',
+    type: "Fashion"
   }
 ];
 
-const stats = [
-  {
-    title: 'Total Agencies',
-    value: '15',
-    change: '+10% from yesterday',
-    color: 'orange-500',
-  },
-  {
-    title: 'Total Active Agencies',
-    value: '12',
-    change: '+8% from yesterday',
-    color: 'green-500',
-  },
-  {
-    title: 'Total projects',
-    value: '10',
-    change: '+2% from yesterday',
-    color: 'purple-500',
-  },
-  {
-    title: 'Projects Completed',
-    value: '5',
-    change: '+3% from yesterday',
-    color: 'blue-500',
-  },
-];
+

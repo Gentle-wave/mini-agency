@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { updateProfileForAdmin } from './helper/user';
 
 const EditUserModal = ({ user, isOpen, onClose, onSave }) => {
   const [editedUser, setEditedUser] = useState(user || {}); // Fallback to empty object if user is null
-
+ 
   useEffect(() => {
     if (user) {
       setEditedUser(user); // Update state when user prop changes
@@ -16,9 +17,15 @@ const EditUserModal = ({ user, isOpen, onClose, onSave }) => {
     setEditedUser({ ...editedUser, [name]: value });
   };
 
-  const handleSave = () => {
-    onSave(editedUser);
-    onClose(); // Close modal after saving
+  const handleSave = async () => {
+    const result = await updateProfileForAdmin(user.userId, editedUser);
+
+    if (result.success) {
+      onSave(editedUser);
+      onClose(); // Close modal after saving
+    } else {
+      alert('Failed to update profile:', result.message);
+    }
   };
 
   return (
@@ -34,8 +41,8 @@ const EditUserModal = ({ user, isOpen, onClose, onSave }) => {
               <label className="block text-sm font-medium text-gray-300">Full Name</label>
               <input
                 type="text"
-                name="name"
-                value={editedUser.name || ''}
+                name="fullName"
+                value={editedUser.fullName || ''}
                 onChange={handleInputChange}
                 className="mt-1 block w-full border border-gray-600 rounded-md p-2 bg-gray-700 text-white"
               />
@@ -58,8 +65,8 @@ const EditUserModal = ({ user, isOpen, onClose, onSave }) => {
               <label className="block text-sm font-medium text-gray-300">Phone</label>
               <input
                 type="text"
-                name="phone"
-                value={editedUser.phone || ''}
+                name="phoneNumber"
+                value={editedUser.phoneNumber || ''}
                 onChange={handleInputChange}
                 className="mt-1 block w-full border border-gray-600 rounded-md p-2 bg-gray-700 text-white"
               />

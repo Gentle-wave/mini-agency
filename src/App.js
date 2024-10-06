@@ -1,24 +1,16 @@
 import './App.css';
 import './index.css'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Login from './home';
-import SignUp from './signup';
-import Dashboard from './admin.dashboard';
-import AgencyDashboard from './agency.dashboard';
+import { RouterProvider } from 'react-router-dom';
+import { AuthProvider } from './Context/AuthProvider';
+import router from './router';
+
 
 function App() {
   return (
-    <Router>
-      <div>
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/Dashboard" element={<Dashboard />} />
-          <Route path="/Dashboard2" element={<AgencyDashboard />} />
-        </Routes>
-      </div>
-    </Router>
-  );
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  )
 }
 
 export default App;

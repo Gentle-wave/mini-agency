@@ -108,8 +108,11 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { signup } from '../helper/auth';
 
 const SignUp = () => {
+  const navigate = useNavigate()
   const [role, setRole] = useState('agency');
   const [formData, setFormData] = useState({
     email: '',
@@ -121,9 +124,21 @@ const SignUp = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add logic for submitting the form
+    try {
+      // Mock login process
+      const response = await signup({ ...formData, role })
+
+      if (response.success) {
+        navigate('/');
+        alert('Sign up successfull!')
+      } else {
+        alert('Sign up failed ' + response.message);
+      }
+    } catch (error) {
+      alert('Sign up failed ' + error.message);
+    }
   };
 
   return (
@@ -137,6 +152,7 @@ const SignUp = () => {
               type="email"
               name="email"
               value={formData.email}
+              required
               onChange={handleChange}
               className="w-full p-2 rounded bg-gray-700 text-white"
             />
@@ -146,6 +162,7 @@ const SignUp = () => {
             <input
               type="password"
               name="password"
+              required
               value={formData.password}
               onChange={handleChange}
               className="w-full p-2 rounded bg-gray-700 text-white"
@@ -157,6 +174,7 @@ const SignUp = () => {
               type="password"
               name="confirmPassword"
               value={formData.confirmPassword}
+              required
               onChange={handleChange}
               className="w-full p-2 rounded bg-gray-700 text-white"
             />
@@ -166,6 +184,7 @@ const SignUp = () => {
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
+              required
               className="w-full p-2 rounded bg-gray-700 text-white"
             >
               <option value="agency">Agency</option>

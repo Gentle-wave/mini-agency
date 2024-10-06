@@ -1,15 +1,42 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom'; // Import Link for navigation
+import { useNavigate } from 'react-router-dom';
+import { login } from '../helper/auth';
+import AuthContext from '../Context/AuthProvider';
 
 const Login = () => {
+  const navigate = useNavigate()
+  const { loginHook } = useContext(AuthContext);
+  const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false);
 
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleSubmit = () => {
-    // Handle form submission logic here
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+
+    try {
+      setLoading(true)
+      // Mock login process
+      console.log('email; ', email)
+      const response = await login({ email, password })
+
+      if (response.success) {
+        loginHook(response.token);
+        navigate('/dashboard');
+      } else {
+        alert('Login failed ' + response.message);
+      }
+    } catch (error) {
+      alert('Login failed ' + error.message);
+    } finally {
+      setLoading(false)
+    }
+
   };
 
   return (
@@ -68,9 +95,10 @@ const Login = () => {
           <div>
             <button
               type="submit"
+              disabled={loading}
               className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-500 rounded-md text-white font-medium"
             >
-              Log In
+              {loading ? 'Loging in...' : 'Log In'}
             </button>
           </div>
         </form>
